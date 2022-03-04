@@ -29,16 +29,11 @@ int main(int argc, char* argv[]){
 
     //For now the code runs for a set amount of time, should change it to a different stop condition
     int iters = 0;
-    int done = 0;
-    while(done == 0){
+    while(iters < 1000000){
         for(int j = 1; j < N -1; ++j){
             double oldT = rod[j];
             double newT = calculateT(j, rod, C);
             rod[j] = newT;
-
-            if(abs(oldT - newT) < err){
-                done = 1;
-            }
         } 
         iters += 1;
     }
