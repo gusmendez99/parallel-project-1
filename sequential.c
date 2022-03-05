@@ -24,7 +24,8 @@ int main(int argc, char* argv[]){
     double Tl = 60;
     double Tr = 140;
     double L = 100;
-    double C = 10e-5;
+    // double C = 10e-5;
+    double C = 0.5;
 
     //Fill the array with the first temp
     for(int i = 0; i < N; ++i){
@@ -41,14 +42,13 @@ int main(int argc, char* argv[]){
     start = time(0);
     while(iters < 100000){
         for(int j = 1; j < N -1; ++j){
-            end = time(0);
-            lapsed_time = difftime(end, start);
+            // end = time(0);
+            // lapsed_time = difftime(end, start);
             double oldT = rod[j];
             double newT = calculateT(j, rod, C, lapsed_time);
             printf("T in %d in time %f is %f\n", j, lapsed_time, newT);
             rod[j] = newT;
-        } 
-        sleep(1);
+        }
         iters += 1;
     }
 
