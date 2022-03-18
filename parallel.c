@@ -7,6 +7,7 @@ Sequential code for the calculation of heat dissipation
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <omp.h>
 
 #define  N 5000
 int calculateT(int n, double *uk1, double *uk0,
@@ -17,8 +18,9 @@ int main(int argc, char* argv[]){
 
     time_t start, end;
     double lapsed_time;
-
-    
+    //start = clock();
+    //end = clock();
+    //cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     double * rod = (double *) malloc(N * sizeof(double));
     double * rod_1 = (double *) malloc(N * sizeof(double));
     double err = 10e-200;
@@ -46,7 +48,7 @@ int main(int argc, char* argv[]){
     double iters = 1;
     double condition = 100;
     double d_time = (0.5 / C)* (L/N) * (L/N);
-    start = clock();
+    double start_time = omp_get_wtime();
     while(condition > 1e-4){
 
         calculateT(N, rod_1, rod, C, (L/N), d_time, Tl, Tr, (double *) &condition);
@@ -54,15 +56,13 @@ int main(int argc, char* argv[]){
         iters += 1;
         //condition = check_condition(rod_1, rod, N);
     }
-    end = clock();
-    lapsed_time = ((double) (end - start)) / CLOCKS_PER_SEC;
 
+    double time = omp_get_wtime() - start_time;
+    printf("Time: %f\n", time);
     // printing final state
     for( int k = 0; k <= N; k+=100){
         printf("%f\n", rod_1[k]);
     }
-
-    printf("Time: %f\n", lapsed_time);
 
     free(rod_1);
     free(rod);
@@ -77,7 +77,7 @@ double check_condition(double * new, double * old, int size) {
             max = val;
         }
     }
-    //printf("---> %f\n", max);
+    // printf("---> %f\n", max);
     return max;
 }
 
@@ -87,13 +87,13 @@ double alpha, double dx, double dt, double bc0, double bc1, double * condition){
     // Sanity check for stability
     if (r > 0.5) return 0;
 
-    //FTCS update algorithm
-    for(int i = 1; i < n-1; ++i) {
+    #pragma omp parallel for 
+    for(int i=1; i<n-1; ++i){
         uk1[i] = uk0[i] + r * (uk0[i-1] -2* uk0[i] + uk0[i+1]);
     }
 
-
     //condition
+    
     double cond_value = check_condition(uk1, uk0, n);
     *condition = cond_value;
 
