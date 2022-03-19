@@ -4,7 +4,9 @@ Project 1 - Parallel Programming
 
 ## Timing & Speedup
 
-- Ts = 25.1138s
-- Tp =  4.2164s
 
-**Speedup** = 5.96 (OpenMP working with 12 threads)
+|    	| i5-10400F (12 threads) 	| M1 Pro (8 threads) 	|
+|----	|------------------------	|--------------------	|
+| ts 	| 25.114s                	| 24.388s             	|
+| tp 	| 4.216s                 	| 11.755s             	|
+| S  	| 5.96                   	| 2.07               	|
