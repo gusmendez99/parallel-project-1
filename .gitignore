@@ -127,3 +127,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# Objects
+par
+seq
+parallel
+sequential
+
+/alternative/parallel
+/alternative/sequential

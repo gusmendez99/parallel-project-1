@@ -1,8 +1,6 @@
 /*
-Sequential code for the calculation of heat dissipation
+ Sequential code for the calculation of heat dissipation
 */
-     
-
 
 #include <stdio.h>
 #include <stdlib.h>
