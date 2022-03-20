@@ -68,7 +68,8 @@ int main(int argc, char* argv[]){
 	        /* Compute values and check stop condition on convergence */
             double max_diff_local = 0.0;
             double diff;
-            #pragma omp for schedule(static)
+            #pragma omp single
+            #pragma omp taskloop shared(max_diff, max_diff_local)
             for (int i = 1; i <= NX; ++i) {
                 rod_1[i] = rod_0[i] + (dt/(dx*dx)) * (rod_0[i+1] - 2 * rod_0[i] + rod_0[i-1]);
                 diff = fabs(rod_0[i] - rod_1[i]);
@@ -88,7 +89,7 @@ int main(int argc, char* argv[]){
     double lapsed_time = omp_get_wtime() - start_time;
     
     // Printing final state
-    for( int k = 0; k < NX + 2; k+=100){
+    for( int k = 0; k < NX + 2; k+=50){
         printf("%f\n", rod_1[k]);
     }
     printf("\nTime: %f s\n", lapsed_time);
