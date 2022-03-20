@@ -8,18 +8,33 @@
 #include <math.h>
 #include <omp.h>
 
-#define N 100000
-#define NX 100000
-#define T0 20.0
-#define Tl 60.0
-#define Tr 120.0
-#define L 10.0
-#define STOP_CONDITION 1e-3
+int N = 100000;
+int NX = 100000;
+double T0  = 20.0;
+double Tl = 60.0;
+double Tr = 120.0;
+double L = 10.0;
+double STOP_CONDITION = 1e-3;
 
 
 void initialize_arrays(double rod_0[], double rod_1[], int nx);
 
 int main(int argc, char* argv[]){
+
+
+       if(argc < 4) {
+        fprintf(stderr, "%s", "Few args. Args: N, T0, Tl, Tr\n");
+        fprintf(stderr, "%s","Using prev defined vals\n");
+    }
+    else {
+        NX = atoi(argv[1]);
+        T0 = atof(argv[2]);
+        Tl = atof(argv[3]);
+        Tr = atof(argv[4]);
+        N = NX;
+    }
+
+
     // Rod arrays
     double * rod_0 = malloc(sizeof(double) * (NX+2));
     double * rod_1 = malloc(sizeof(double) * (NX+2));
