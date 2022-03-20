@@ -5,102 +5,107 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
-#define  N 5000
-int calculateT(int n, double *uk1, double *uk0,
-double alpha, double dx, double dt, double bc0, double bc1, double * condition);
-double check_condition(double * new, double * old, int size);
+int N = 100000;
+int NX = 100000;
+double T0  = 20.0;
+double Tl = 60.0;
+double Tr = 120.0;
+double L = 10.0;
+double STOP_CONDITION = 1e-3;
+
+
+void initialize_arrays(double rod_0[], double rod_1[], int nx);
 
 int main(int argc, char* argv[]){
 
+    
     time_t start, end;
     double lapsed_time;
 
+    // int count = 0;
+    // while(argv[++count] != NULL);
+
+    if(argc < 4) {
+        fprintf(stderr, "%s", "Few args. Args: N, T0, Tl, Tr\n");
+        fprintf(stderr, "%s","Using prev defined vals\n");
+    }
+    else {
+        NX = atoi(argv[1]);
+        T0 = atof(argv[2]);
+        Tl = atof(argv[3]);
+        Tr = atof(argv[4]);
+        N = NX;
+    }
+
+
+
+
+    // Rod arrays
+    double * rod_0 = malloc(sizeof(double) * (NX+2));
+    double * rod_1 = malloc(sizeof(double) * (NX+2));
+    double *temp; 
     
-    double * rod = (double *) malloc(N * sizeof(double));
-    double * rod_1 = (double *) malloc(N * sizeof(double));
-    double err = 10e-200;
-    double T0 = 20;
-    double Tl = 60;
-    double Tr = 120;
-    double L = 10;
-    double C = 9e-3;
-    //double C = 0.5;
+    int iter;
+    double max_diff = STOP_CONDITION;
 
-    //Fill the array with the first temp
-    for(int i = 0; i < N; ++i){
-        rod[i] = T0;
-        rod_1[i] = T0;
-    }
+    double dx = (L/NX);
+    double dt = (0.5) * dx * dx;
 
-    //Set the frontier conditions
-    rod[0] = Tl;
-    rod[N-1] = Tr;
-    rod_1[0] = Tl;
-    rod_1[N-1] = Tr;
-
-
-    //For now the code runs for a set amount of time, should change it to a different stop condition
-    double iters = 1;
-    double condition = 100;
-    double d_time = (0.5 / C)* (L/N) * (L/N);
+    // TIME START
     start = clock();
-    while(condition > 1e-4){
 
-        calculateT(N, rod_1, rod, C, (L/N), d_time, Tl, Tr, (double *) &condition);
-        //printf("Iter: %f Condition: %f \n", iters, condition);
-        iters += 1;
-        //condition = check_condition(rod_1, rod, N);
+    // Initialize rod arrays
+    initialize_arrays(rod_0, rod_1, NX);
+
+    for (iter = 0; (iter < N) && (max_diff >= STOP_CONDITION); ++iter) {
+        max_diff = 0.0;
+        {
+	        /* Compute values and check stop condition on convergence */
+            double max_diff_local = 0.0;
+            double diff;
+            for (int i = 1; i <= NX; ++i) {
+                rod_1[i] = rod_0[i] + (dt/(dx*dx)) * (rod_0[i+1] - 2 * rod_0[i] + rod_0[i-1]);
+                diff = fabs(rod_0[i] - rod_1[i]);
+                if (diff > max_diff_local) max_diff_local = diff;
+            }
+            
+            if (max_diff_local > max_diff) max_diff = max_diff_local;
+        }
+
+        /* Copy rod_1 to rod_0 by swapping pointers */
+        temp = rod_1; rod_1 = rod_0; rod_0 = temp;
     }
+
+    // TIME END
     end = clock();
     lapsed_time = ((double) (end - start)) / CLOCKS_PER_SEC;
-
-    // printing final state
-    for( int k = 0; k <= N; k+=100){
+    
+    // Printing final state
+    for( int k = 0; k < NX + 2; k+=5){
         printf("%f\n", rod_1[k]);
     }
+    printf("\nTime: %f\n", lapsed_time);
+    printf("NX (points) = %d, N(max iters) = %d, stop condition = %g\n", NX, N, STOP_CONDITION);
+    if (max_diff < STOP_CONDITION) {
+        printf("-> Algorithm converged in %d iterations\n", iter);
+    }
+    else {
+        printf("-> Fail to converge in %d iterations, max diff between values was %g\n", iter, max_diff);
+    }
 
-    printf("Time: %f\n", lapsed_time);
-
+    free(rod_0);
     free(rod_1);
-    free(rod);
 }
 
-double check_condition(double * new, double * old, int size) {
-    double max = sizeof(int);
-    max = -1 * max;
-    for(int i=0; i<=size-1; ++i) {
-        double val = new[i] - old[i];
-        if (val > max) {
-            max = val;
-        }
-    }
-    //printf("---> %f\n", max);
-    return max;
-}
 
-int calculateT(int n, double *uk1, double *uk0,
-double alpha, double dx, double dt, double bc0, double bc1, double * condition){
-    double r = alpha * dt / (dx * dx);
-    // Sanity check for stability
-    if (r > 0.5) return 0;
+void initialize_arrays(double rod_0[], double rod_1[], int nx) {
+    // Set the frontier conditions
+    rod_0[0] = rod_1[0] = Tl; 
+    rod_0[nx+1] = rod_1[nx+1] = Tr;
 
-    //FTCS update algorithm
-    for(int i = 1; i < n-1; ++i) {
-        uk1[i] = uk0[i] + r * (uk0[i-1] -2* uk0[i] + uk0[i+1]);
-    }
-
-
-    //condition
-    double cond_value = check_condition(uk1, uk0, n);
-    *condition = cond_value;
-
-    for(int i=1; i<n-1; ++i) {
-        uk0[i] = uk1[i];
-    }
-    // Enforce boundary conditions
-    uk1[0] = bc0;
-    uk1[n] = bc1;
-
-    return 1;
+    // Fill the array with the first temp
+    for (int i = 1; i <= nx; ++i)
+        rod_0[i] = rod_1[i] = T0;
 }
