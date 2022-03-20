@@ -7,9 +7,9 @@ CC3069 class
 
 |    	| i5-10400F (12 threads) 	| M1 Pro (8 threads) 	|
 |----	|------------------------	|--------------------	|
-| ts 	| 25.114s                	| 24.518s             	|
-| tp 	| 4.216s                 	| 1.997s             	|
-| S  	| 5.96                   	| 11.931               	|
+| ts 	| 24.518s                	| 25.114s             	|
+| tp 	| 1.997s                 	| 4.216s             	|
+| S  	| 11.931                   	| 5.96               	|
 
 
 ## Test and run 💻
@@ -28,6 +28,14 @@ make run
 
 Run sequential program
 
+Compile it
+
+```console
+gcc -o seq sequential.c
+```
+
+Run it
+
 ```console
 ./seq
 ```
@@ -35,7 +43,7 @@ Run sequential program
 If no arguments the programs will use default ones. If you want to test, pass the follow arguments:
 
 ```console
-{./seq | ./par} N T0 Tl Tr
+{./seq | ./parallel} N T0 Tl Tr
 ```
 
 - N : Division on the rod
